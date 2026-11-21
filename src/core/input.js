@@ -25,31 +25,34 @@ export class Input {
     });
     window.addEventListener('keyup', (e) => { this.down.delete(e.code); });
     window.addEventListener('blur', () => this.down.clear());
-    this.cursorX = 0; this.cursorY = 0; // posição normalizada do cursor (-1..1), usada no modo livre
+    this.ignoreUntil = 0;
     document.addEventListener('mousemove', (e) => {
-      this.cursorX = (e.clientX / window.innerWidth) * 2 - 1; this.cursorY = (e.clientY / window.innerHeight) * 2 - 1;
       if (!this.locked) return;
-      this.mouseDX += e.movementX || 0; this.mouseDY += e.movementY || 0;
+      // o Chrome às vezes manda um "salto" enorme logo ao capturar o mouse: descarta para a câmera não pular sozinha
+      if (performance.now() < this.ignoreUntil) return;
+      const dx = e.movementX || 0, dy = e.movementY || 0;
+      if (Math.abs(dx) > 300 || Math.abs(dy) > 300) return;
+      this.mouseDX += dx; this.mouseDY += dy;
     });
     document.addEventListener('mousedown', (e) => { if (this.locked && e.button === 0) this.mousePressed = true; });
     document.addEventListener('pointerlockchange', () => {
-      if (document.pointerLockElement === this.canvas) { this.free = false; this.locked = true; this.setCursor(true); return; }
+      if (document.pointerLockElement === this.canvas) { this.free = false; this.locked = true; this.setCursor(true); this.ignoreUntil = performance.now() + 120; this.mouseDX = this.mouseDY = 0; return; }
       if (!this.free) { this.locked = false; this.down.clear(); this.setCursor(false); }
     });
     document.addEventListener('pointerlockerror', () => this.enterFree());
-    document.addEventListener('mouseleave', () => { this.cursorX = 0; this.cursorY = 0; });
   }
   setCursor(hidden) { this.canvas.style.cursor = hidden ? 'none' : ''; document.body.style.cursor = hidden ? 'none' : ''; }
   enterFree() { this.free = true; this.locked = true; this.setCursor(true); }
   lock() {
-    if (this.locked) return;
-    if (this.free) { this.locked = true; this.setCursor(true); return; }
+    if (document.pointerLockElement === this.canvas) return;
+    // sempre tenta a captura de verdade de novo (antes, depois de cair no modo livre o jogo nunca mais tentava)
+    if (this.free) { this.locked = true; this.setCursor(true); }
     try {
       const p = this.canvas.requestPointerLock();
       if (p && p.catch) p.catch(() => this.enterFree());
     } catch { this.enterFree(); return; }
     // se a captura não acontecer em pouco tempo, o navegador bloqueou: usa o modo livre
-    setTimeout(() => { if (!this.locked && document.pointerLockElement !== this.canvas) this.enterFree(); }, 600);
+    setTimeout(() => { if (document.pointerLockElement !== this.canvas && !this.free) this.enterFree(); }, 600);
   }
   unlock() {
     if (document.pointerLockElement) document.exitPointerLock();

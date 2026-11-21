@@ -350,7 +350,7 @@ export class Entity {
     if (this.footAcc > (speed > 2 ? 0.95 : 0.8)) {
       this.footAcc = 0;
       const room = this.g.world.roomAt(this.pos.x, this.pos.z);
-      this.g.audio.play('step', { surface: room?.surface || 'wood', pos: { x: this.pos.x, y: 0.1, z: this.pos.z }, vol: speed > 2 ? 0.9 : 0.55, rate: 0.8 });
+      this.g.audio.play('heavyStep', { surface: room?.surface || 'wood', pos: { x: this.pos.x, y: 0.1, z: this.pos.z }, vol: speed > 2 ? 1.6 : 1.15, ref: 2.5, rolloff: 0.9 });
     }
   }
   openDoorsAhead() {

@@ -56,14 +56,9 @@ export class Player {
       // setas também giram a câmera (útil quando o mouse chega na borda da tela)
       const kx = (inp.down.has('ArrowRight') ? 1 : 0) - (inp.down.has('ArrowLeft') ? 1 : 0);
       const ky = (inp.down.has('ArrowDown') ? 1 : 0) - (inp.down.has('ArrowUp') ? 1 : 0);
-      // modo livre (navegador sem captura do mouse): encostar o cursor na borda continua girando
-      let ex = 0, ey = 0;
-      if (inp.free && inp.locked) {
-        const edge = (v) => (Math.abs(v) > 0.9 ? Math.sign(v) * Math.min(1, (Math.abs(v) - 0.9) / 0.09) : 0);
-        ex = edge(inp.cursorX); ey = edge(inp.cursorY);
-      }
-      this.yaw -= (inp.locked ? mx * sens : 0) + (kx + ex * 1.2) * 2.2 * s.sensitivity * dt;
-      this.pitch -= (inp.locked ? my * sens : 0) * (s.invertY ? -1 : 1) + (ky + ey * 0.8) * 1.6 * s.sensitivity * dt;
+      // a câmera só se move com o mouse ou com as setas (nada de giro automático)
+      this.yaw -= (inp.locked ? mx * sens : 0) + kx * 2.2 * s.sensitivity * dt;
+      this.pitch -= (inp.locked ? my * sens : 0) * (s.invertY ? -1 : 1) + ky * 1.6 * s.sensitivity * dt;
       this.pitch = clamp(this.pitch, -1.45, 1.45);
       if (g.hiding.active) g.hiding.clampLook(this);
     }
@@ -121,7 +116,7 @@ export class Player {
     const g = this.g;
     const room = g.world.roomAt(this.pos.x, this.pos.z);
     const surface = room?.surface || 'wood';
-    const vol = this.sprinting ? 0.75 : this.crouching ? 0.18 : 0.42;
+    const vol = this.sprinting ? 1.3 : this.crouching ? 0.35 : 0.85;
     const side = (this.stepSide = !this.stepSide) ? 1 : -1;
     const f = this.forward();
     g.audio.play('step', { surface, vol, pos: { x: this.pos.x + f.z * 0.15 * side, y: 0.1, z: this.pos.z - f.x * 0.15 * side }, occl: false });

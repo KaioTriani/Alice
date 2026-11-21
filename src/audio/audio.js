@@ -167,12 +167,34 @@ export class AudioEngine {
     const r = opts.rate || 1;
     switch (name) {
       case 'step': {
+        // passo em duas partes: calcanhar (impacto grave) e ponta do pé (arrasto), com variação a cada passo
         const s = opts.surface || 'wood';
-        const cfg = { wood: [700, 0.5, 0.09, 90], tile: [2600, 0.9, 0.06, 0], carpet: [420, 0.3, 0.07, 0], concrete: [1500, 0.7, 0.07, 0], vinyl: [2000, 0.8, 0.05, 0], grass: [520, 0.32, 0.12, 0] }[s] || [700, 0.5, 0.09, 90];
-        this.burst(d, t, cfg[2], 'bandpass', cfg[0] * (0.85 + Math.random() * 0.3), 1.2, cfg[1]);
-        if (cfg[3]) this.tone(d, t, 'sine', cfg[3], 0.08, 0.4);
-        if (s === 'wood' && Math.random() < 0.12) this.creakShort(d, t + 0.03);
-        dur = 0.3; break;
+        // [freq do impacto, ganho do impacto, freq do arrasto, ganho do arrasto, grave (Hz), ganho do grave]
+        const cfg = {
+          wood: [520, 1.1, 1500, 0.35, 85, 0.9], tile: [1900, 1.0, 3800, 0.45, 0, 0], carpet: [300, 0.6, 900, 0.18, 70, 0.5],
+          concrete: [900, 1.0, 2600, 0.5, 60, 0.5], vinyl: [1500, 0.9, 3200, 0.5, 0, 0], grass: [420, 0.55, 2200, 0.5, 0, 0],
+        }[s] || [520, 1.1, 1500, 0.35, 85, 0.9];
+        const v = 0.85 + Math.random() * 0.3;
+        this.burst(d, t, 0.06, 'lowpass', cfg[0] * v, 0.8, cfg[1]);
+        if (cfg[4]) this.tone(d, t, 'sine', cfg[4] * v, 0.09, cfg[5]);
+        this.burst(d, t + 0.045 + Math.random() * 0.02, s === 'grass' ? 0.12 : 0.07, 'bandpass', cfg[2] * v, 1.4, cfg[3]);
+        if (s === 'wood' && Math.random() < (opts.heavy ? 0.45 : 0.18)) this.creakShort(d, t + 0.05);
+        dur = 0.35; break;
+      }
+      case 'heavyStep': {
+        // passo da entidade: pesado e lento, com o tecido da capa arrastando
+        const s = opts.surface || 'wood';
+        this.burst(d, t, 0.12, 'lowpass', s === 'tile' || s === 'vinyl' ? 700 : 340, 0.8, 1.6);
+        this.tone(d, t, 'sine', 48 + Math.random() * 10, 0.18, 1.3);
+        this.burst(d, t + 0.06, 0.09, 'bandpass', s === 'tile' ? 2400 : 1100, 1.2, 0.4);
+        // arrasto do pano
+        const n = this.noise(), f = this.bp('highpass', 1800, 0.6), g2 = ctx.createGain();
+        n.connect(f); f.connect(g2); g2.connect(d);
+        g2.gain.setValueAtTime(0.0001, t + 0.05); g2.gain.linearRampToValueAtTime(0.22, t + 0.25); g2.gain.linearRampToValueAtTime(0.0001, t + 0.6);
+        f.frequency.setValueAtTime(1800, t); f.frequency.linearRampToValueAtTime(3200, t + 0.6);
+        n.start(t, Math.random()); n.stop(t + 0.65);
+        if (s === 'wood' && Math.random() < 0.5) this.creakShort(d, t + 0.08);
+        dur = 0.7; break;
       }
       case 'creak': {
         const o1 = this.osc('sawtooth', 170 * r), f = this.bp('bandpass', 900, 6), g = ctx.createGain();

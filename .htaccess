@@ -1,0 +1,20 @@
+# Configuração para hospedagem Apache (Hostinger)
+# Tipos corretos para os módulos JavaScript do jogo
+AddType text/javascript .js .mjs
+AddType text/css .css
+AddDefaultCharset UTF-8
+
+# Versão de testes: sem cache, para sempre carregar a versão mais nova após cada envio
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# Compressão (deixa o carregamento bem mais rápido)
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript
+</IfModule>
+
+# Não listar o conteúdo das pastas
+Options -Indexes

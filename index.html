@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALICE</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.js", "reflector": "./lib/Reflector.js" } }
+</script>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="crosshair"></div>
+  <div id="prompt"></div>
+  <svg id="holdRing" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" class="bg"/><circle cx="20" cy="20" r="16" class="fg" id="holdArc"/></svg>
+  <div id="objective"><div class="obj-head"></div><div class="obj-title"></div><ul class="obj-steps"></ul></div>
+  <div id="toasts"></div>
+  <div id="subtitles"></div>
+  <div id="status">
+    <div id="sanityEye" title="Estado de Alice"><svg viewBox="0 0 48 24"><path id="eyeShape" d="M2 12 Q24 -4 46 12 Q24 28 2 12Z"/><circle id="eyePupil" cx="24" cy="12" r="5"/><path id="eyeCrack" d=""/></svg><span id="sanityNum"></span></div>
+    <div id="battery"><span class="lbl">LANTERNA</span><div class="cells"><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div id="stamina"><div></div></div>
+  <div id="breathMeter"><span>Prendendo a respiração</span><div><b></b></div></div>
+  <div id="struggle" class="hidden"><div class="txt"></div><div class="bar"><b></b></div></div>
+  <div id="hideOverlay"></div>
+</div>
+
+<div id="vhs" class="hidden"><canvas id="vhsCanvas" width="320" height="240"></canvas><div class="osd"><span class="play">PLAY ▶</span><span class="tc" id="vhsTc">SP 0:00:00</span></div></div>
+<div id="story" class="hidden"><canvas id="storyCanvas" width="640" height="360"></canvas></div>
+<div id="titlecard" class="hidden"><div class="t1"></div><div class="t2"></div></div>
+<div id="fade"></div>
+
+<!-- Documentos -->
+<div id="doc" class="panel hidden">
+  <div class="doc-inner">
+    <div class="doc-title"></div>
+    <canvas class="doc-img" width="320" height="220"></canvas>
+    <div class="doc-text"></div>
+    <div class="doc-nav"><button class="prev">◀</button><span class="page"></span><button class="next">▶</button></div>
+    <div class="doc-hint">[E] para fechar</div>
+  </div>
+</div>
+
+<!-- Inventário -->
+<div id="inventory" class="panel hidden">
+  <div class="inv-wrap">
+    <h2>Lembranças</h2>
+    <div class="inv-grid"></div>
+    <div class="inv-detail">
+      <img class="inv-icon" alt="">
+      <div class="inv-name"></div>
+      <div class="inv-desc"></div>
+      <div class="inv-actions"><button data-a="use">Usar</button><button data-a="combine">Combinar</button></div>
+      <div class="inv-hint"></div>
+    </div>
+    <div class="inv-foot">[I] ou [Esc] para fechar</div>
+  </div>
+</div>
+
+<!-- Diário -->
+<div id="journal" class="panel hidden">
+  <div class="jr-wrap">
+    <div class="jr-col"><h2>Objetivos</h2><div class="jr-obj"></div></div>
+    <div class="jr-col"><h2>Documentos</h2><div class="jr-docs"></div></div>
+  </div>
+  <div class="inv-foot">[Tab] ou [Esc] para fechar</div>
+</div>
+
+<!-- Menus -->
+<div id="menu" class="screen hidden">
+  <div class="menu-left">
+    <h1>ALICE</h1>
+    <div class="tag">Toda casa tem seus segredos.</div>
+    <nav>
+      <button data-m="new">Novo jogo</button>
+      <button data-m="continue" id="btnContinue">Continuar</button>
+      <button data-m="settings">Configurações</button>
+      <button data-m="credits">Créditos</button>
+      <button data-m="exit">Sair</button>
+    </nav>
+    <div class="foot">Use fones de ouvido. Jogue no escuro.</div>
+  </div>
+</div>
+
+<div id="newgame" class="screen hidden">
+  <div class="box">
+    <h2>Dificuldade</h2>
+    <div class="diff">
+      <button data-d="easy"><b>Fácil</b><span>Entidade menos atenta, mais pilhas, recuperação mais rápida.</span></button>
+      <button data-d="normal"><b>Normal</b><span>A experiência pensada para ALICE.</span></button>
+      <button data-d="hard"><b>Difícil</b><span>Audição aguçada, poucos recursos, esconderijos exigentes.</span></button>
+    </div>
+    <button class="back">Voltar</button>
+  </div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="box">
+    <h2>Pausado</h2>
+    <nav>
+      <button data-p="resume">Continuar</button>
+      <button data-p="journal">Objetivos e notas</button>
+      <button data-p="settings">Configurações</button>
+      <button data-p="checkpoint">Voltar ao último checkpoint</button>
+      <button data-p="menu">Menu principal</button>
+    </nav>
+  </div>
+</div>
+
+<div id="settings" class="screen hidden">
+  <div class="box wide">
+    <h2>Configurações</h2>
+    <div class="tabs"><button data-t="game" class="on">Jogo</button><button data-t="video">Vídeo</button><button data-t="audio">Áudio</button><button data-t="access">Acessibilidade</button><button data-t="controls">Controles</button></div>
+    <div class="tabbody"></div>
+    <button class="back">Voltar</button>
+  </div>
+</div>
+
+<div id="credits" class="screen hidden">
+  <div class="box">
+    <h2>ALICE</h2>
+    <p>Um projeto narrativo de terror psicológico.</p>
+    <p>Baseado no documento de design "ALICE: The House That Remembers".<br>Desenvolvido com Claude.</p>
+    <p>Todos os sons, músicas, texturas e modelos são gerados por código para este jogo.<br>Motor gráfico: Three.js (licença MIT).</p>
+    <p class="small">Inspirado no espírito de P.T., ANATOMY, Visage e MADiSON, sem reutilizar nenhum de seus conteúdos.</p>
+    <button class="back">Voltar</button>
+  </div>
+</div>
+
+<div id="death" class="screen hidden">
+  <div class="box">
+    <h2 class="death-title">Alice perdeu os sentidos.</h2>
+    <p class="death-sub">"Mamãe, por que você não abriu os olhos?"</p>
+    <nav><button data-x="retry">Tentar novamente</button><button data-x="menu">Menu principal</button></nav>
+  </div>
+</div>
+
+<div id="ending" class="screen hidden">
+  <div class="box">
+    <h1>ALICE</h1>
+    <p class="end-quote">A casa não estava assombrada.<br>Ela estava lembrando.</p>
+    <p class="small">Obrigado por jogar.</p>
+    <p class="small help">Este jogo aborda luto, doença mental e perda. Alice é uma personagem de ficção. Transtornos psicóticos não tornam ninguém violento por natureza; quem vive com eles tem muito mais chance de sofrer violência do que de causá-la. Se você ou alguém próximo estiver passando por sofrimento psíquico, procure ajuda. No Brasil, o CVV atende pelo número 188, 24 horas, de graça.</p>
+    <nav><button data-x="menu">Menu principal</button></nav>
+  </div>
+</div>
+
+<div id="warning" class="screen">
+  <div class="box">
+    <h2>Aviso de conteúdo</h2>
+    <p>ALICE é uma história de terror psicológico que aborda luto, psicose, internação psiquiátrica e a morte de crianças. Não há violência explícita, mas o tema é pesado.</p>
+    <p class="small">O jogo contém luzes piscando e distorções visuais. Você pode reduzi-las em Configurações, na aba Acessibilidade.</p>
+    <p class="small">Use fones de ouvido. O som faz parte do jogo.</p>
+    <button id="warnOk">Entendi, continuar</button>
+  </div>
+</div>
+
+<div id="loading" class="screen hidden"><div class="ld">Carregando lembranças...</div></div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

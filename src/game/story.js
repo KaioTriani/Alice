@@ -981,7 +981,7 @@ export class Story {
     const g = this.g, F = this.f;
     F.puzzle = true;
     if (!g.inventory.has('photos') && !F.framesSolved) g.inventory.add('photos', 1, true);
-    this.obj('A porta branca', [['frames', 'Organize as quatro fotos nas molduras do corredor'], ['key', 'Encontre a chave da porta branca']]);
+    this.obj('A porta branca', [['frames', 'Ponha as fotos do corredor na ordem em que tudo aconteceu'], ['key', 'Encontre a chave da porta branca']]);
     g.ui.toast('Ele está andando pela casa. Fique em silêncio.', 4);
     g.director.enabled = true;
     // a caçada começa depois que o jogador entende o quebra-cabeça (leu o bilhete) ou após 25 s

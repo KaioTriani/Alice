@@ -183,7 +183,37 @@ export function buildHouse(g) {
   R.bedRail = W.box(0.04, 0.35, 1.2, M.metal, 3.05, 0.45, 1.2, { collide: false }); R.bedRail.visible = false;
 
   // ---------- BANHEIRO
-  W.box(1.7, 0.55, 0.75, M.white, 5.95, 0, 0.46); W.box(1.5, 0.05, 0.55, basic(0x9fb4bc), 5.95, 0.5, 0.46, { collide: false });
+  // banheira de louça encostada na parede norte: paredes com espessura, fundo rebaixado, borda arredondada
+  {
+    const por = mat(null, 0xeceae4), inner = mat(null, 0xd8dcdc), cx = 5.95, cz = 0.47, L = 1.7, D = 0.74, Ht = 0.55, T = 0.07;
+    W.box(L, 0.08, D, mat(null, 0xc8c6c0), cx, 0, cz, { collide: false });                     // base
+    W.box(L, Ht - 0.08, T, por, cx, 0.08, cz + D / 2 - T / 2, { collide: false });             // frente (lado do banheiro)
+    W.box(L, Ht - 0.08, T, por, cx, 0.08, cz - D / 2 + T / 2, { collide: false });             // fundo (parede)
+    W.box(T, Ht - 0.08, D - 2 * T, por, cx - L / 2 + T / 2, 0.08, cz, { collide: false });     // lado oeste
+    W.box(T, Ht - 0.08, D - 2 * T, por, cx + L / 2 - T / 2, 0.08, cz, { collide: false });     // lado leste
+    W.box(L - 2 * T, 0.02, D - 2 * T, inner, cx, 0.12, cz, { collide: false });                 // fundo interno
+    // borda arredondada
+    for (const [w, d, x, z] of [[L + 0.02, 0.05, cx, cz + D / 2 - 0.02], [L + 0.02, 0.05, cx, cz - D / 2 + 0.02], [0.05, D, cx - L / 2 + 0.02, cz], [0.05, D, cx + L / 2 - 0.02, cz]]) {
+      const r = W.box(w, 0.035, d, por, x, Ht - 0.01, z, { collide: false });
+    }
+    // rodapé de azulejo na frente (encaixe com o piso)
+    W.box(L, 0.06, 0.02, mat(null, 0xa8b0b2), cx, 0, cz + D / 2 + 0.005, { collide: false });
+    W.cyl(0.03, 0.03, 0.006, mat(null, 0x5a5a5a), cx + L / 2 - 0.22, 0.13, cz, { seg: 10 });   // ralo
+    // torneira de parede com bica e dois registros, e uma corrente com tampa
+    const inox = mat(null, 0xb4b8b8);
+    W.box(0.05, 0.04, 0.12, inox, cx + L / 2 - 0.22, 0.72, 0.12, { collide: false });
+    W.box(0.03, 0.03, 0.05, inox, cx + L / 2 - 0.22, 0.69, 0.2, { collide: false });
+    for (const dx of [-0.13, 0.13]) { W.cyl(0.025, 0.025, 0.04, inox, cx + L / 2 - 0.22 + dx, 0.74, 0.1, { seg: 6 }); W.box(0.06, 0.012, 0.012, mat(null, dx < 0 ? 0xc03030 : 0x3050c0), cx + L / 2 - 0.22 + dx, 0.78, 0.1, { collide: false }); }
+    // chuveiro, varão e cortina meio aberta
+    W.cyl(0.012, 0.012, 1.2, inox, cx + L / 2 - 0.22, 0.75, 0.1, { seg: 5 });
+    W.cyl(0.06, 0.04, 0.03, inox, cx + L / 2 - 0.22, 1.93, 0.16, { seg: 8 });
+    W.box(L, 0.02, 0.02, inox, cx, 2.0, cz + D / 2 - 0.04, { collide: false });
+    for (let i = 0; i < 6; i++) W.box(0.11, 1.4, 0.015, mat(Tex.fabric([190, 210, 214]), 0xffffff), cx - L / 2 + 0.08 + i * 0.1, 0.58, cz + D / 2 - 0.04 + (i % 2) * 0.02, { collide: false, ry: (i % 2 ? 0.25 : -0.25) });
+    // toalha dobrada na borda e frasco de xampu
+    W.box(0.3, 0.05, 0.18, M.fabricBlue, cx - L / 2 + 0.28, Ht + 0.02, cz + D / 2 - 0.1, { collide: false });
+    W.cyl(0.03, 0.035, 0.14, mat(null, 0xe0a040), cx + L / 2 - 0.08, Ht + 0.02, cz - D / 2 + 0.09, { seg: 7 });
+    W.addCollider(cx - L / 2, cx + L / 2, cz - D / 2, cz + D / 2);
+  }
   // vaso sanitário: caixa acoplada encostada na parede leste, assento virado para o oeste
   W.cyl(0.13, 0.17, 0.38, M.white, 7.5, 0, 1.2, { collide: false, seg: 8 });
   W.box(0.5, 0.06, 0.4, M.white, 7.55, 0.38, 1.2, { collide: false });
@@ -285,12 +315,16 @@ export function buildHouse(g) {
   wallPhoto(W, 13.6, 1.6, 5.91, 'x-', 'park');
   // mensagens na parede (Ato III)
   R.scrawls = [];
-  const scrawl = (text, x, y, z, ry, w = 1.3) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.375), new THREE.MeshBasicMaterial({ map: Tex.scrawl(text), transparent: true, depthWrite: false })); m.position.set(x, y, z); m.rotation.y = ry; m.visible = false; S.add(m); R.scrawls.push(m); return m; };
-  scrawl('VOCÊ NÃO ESTÁ SOZINHA', 9.0, 1.7, 5.9, PI);
-  scrawl('NÃO ABRA A PORTA', 0.1, 1.5, 7.6, PI / 2);
-  scrawl('ELES ESTÃO COM MEDO', 10.5, 1.6, 3.9, PI);
-  scrawl('VOCÊ PROMETEU PROTEGER', 15.9, 1.6, 8.8, -PI / 2);
-  scrawl('LEMBRE-SE DO QUE FEZ', 5.08, 1.85, 1.2, PI / 2, 1.0);
+  // escritos "pintados" rente à parede (0,5 cm da face), sempre dentro de um trecho inteiro de parede
+  const scrawl = (text, x, y, z, ry, w = 1.3) => {
+    const mtl = new THREE.MeshLambertMaterial({ map: Tex.scrawl(text), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.375), mtl); m.position.set(x, y, z); m.rotation.y = ry; m.visible = false; S.add(m); R.scrawls.push(m); return m;
+  };
+  scrawl('VOCÊ NÃO ESTÁ SOZINHA', 5.3, 1.7, 5.915, PI);          // corredor, parede sul (entre a porta da sala e o arco da sala de jantar)
+  scrawl('NÃO ABRA A PORTA', 0.086, 1.5, 7.4, PI / 2);            // sala, parede oeste
+  scrawl('ELES ESTÃO COM MEDO', 9.05, 1.6, 3.915, PI, 1.1);       // quarto das crianças, à esquerda da porta
+  scrawl('VOCÊ PROMETEU PROTEGER', 15.914, 1.65, 8.8, -PI / 2);   // cozinha, parede leste (acima da bancada)
+  scrawl('LEMBRE-SE DO QUE FEZ', 5.086, 1.85, 1.2, PI / 2, 1.0);  // banheiro, acima da banheira
   // lâmpada fluorescente (Ato IV)
   R.fluor = W.box(1.2, 0.05, 0.12, basic(0xeef4ff), 8, WALL_H - 0.06, 5, { collide: false }); R.fluor.visible = false;
   R.fx.fluor = L.add({ pos: [8, WALL_H - 0.3, 5], room: rooms.hall, intensity: 1.1, range: 6, color: 0xdfeaff, on: false, fixedColor: true, glow: 1.4 });

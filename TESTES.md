@@ -94,6 +94,17 @@ Bugs encontrados e corrigidos nessa partida:
 | 15 | Texto "Pegar alice no país das maravilhas" | Estranho | "Pegar o livro" |
 | 16 | Reflexo do espelho estourado e espelho da penteadeira branco chapado | Visual estranho | Tons ajustados |
 
+## Rodada final (versão 1.0)
+
+| Mudança | Verificado |
+|---|---|
+| Aviso de conteúdo sem spoilers (só "luto, saúde mental e perda") | Texto conferido na tela |
+| Revelação explícita: na fita, Alice conta que achou que o homem de preto ia levar os filhos; o médico responde "Foi você."; cartões finais explicam a psicose sem tratamento, a crise de 20/11 e que ela tirou a vida de Emily e Thomas tentando protegê-los. Prontuário atualizado. Sem descrição de violência | Falas e cartões rodados por script, sem erros |
+| Segurar E pula a abertura desenhada | Pulou e caiu direto no café da manhã |
+| Exportar/Importar save em Configurações > Jogo | Botões presentes; formato do save igual ao do jogo |
+| Câmera não gira sozinha; passos mais presentes | Rodada anterior |
+| Executável Windows (Electron) com ícone próprio, tela cheia e save local | Ver abaixo |
+
 ## Não verificado nesta sessão
 
 - Sensação real de controle com mouse travado (pointer lock) e o ritmo jogando de verdade: o navegador de teste não permite capturar o mouse por script.

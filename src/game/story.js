@@ -55,7 +55,7 @@ export class Story {
   get f() { return this.g.flags; }
   wait(s) { return this.g.wait(s); }
   until(fn, timeout = 0) { return this.g.until(fn, timeout); }
-  async say(sp, text, o = {}) { const d = this.g.audio.say(sp, text, o); await this.wait((o.hold ?? d) * (o.k ?? 1)); }
+  async say(sp, text, o = {}) { if (this.skipping) return; const d = this.g.audio.say(sp, text, o); await this.wait((o.hold ?? d) * (o.k ?? 1)); }
   inRoom(name) { const p = this.g.player.pos; const r = this.g.world.roomAt(p.x, p.z); return !!r && r.name === name; }
   obj(title, steps, head) { this.g.tasks.set(title, steps, head); }
   done(id) { this.g.tasks.done(id); }
@@ -98,6 +98,16 @@ export class Story {
       g.house.whiteWindowTex.needsUpdate = true;
     }
     this.updatePour(dt);
+    // segurar E durante a abertura desenhada pula a animação
+    if (this.skippable && !this.skipping) {
+      this.skipHold = g.input.key('interact') ? this.skipHold + dt : Math.max(0, this.skipHold - dt * 2);
+      g.ui.skipHint(this.skipHold / 1.2, g.keyName('interact'));
+      if (this.skipHold >= 1.2) {
+        this.skipping = true; g.storyT = 39.6; g.ui.skipHint(-1);
+        if ('speechSynthesis' in window) speechSynthesis.cancel();
+        document.getElementById('subtitles').innerHTML = '';
+      }
+    }
     // quintal: balanço que se move sozinho e ambiente externo
     if (g.house.swing) g.house.swing.rotation.x = Math.sin(g.time * 1.7) * (this.f.night ? 0.12 : 0.45);
     if (g.house.sheets) g.house.sheets.forEach((sh, i) => { sh.rotation.x = Math.sin(g.time * 1.3 + i) * 0.12; });
@@ -511,7 +521,7 @@ export class Story {
     const g = this.g;
     g.ui.fade(1, 0.01); g.setCinematic(true);
     // abertura desenhada: a despedida, o táxi, o aeroporto e o voo
-    g.storyT = 0; g.ui.story(true);
+    g.storyT = 0; g.ui.story(true); this.skippable = true; this.skipHold = 0;
     const at = (t) => this.until(() => g.storyT >= t);
     const mbox = g.audio.loop('musicbox', { bus: 'music', vol: 0.35, rate: 0.9 });
     await at(1.2);
@@ -535,7 +545,7 @@ export class Story {
     g.audio.play('alarm', { vol: 0.5 });
     await this.say('radio', 'Senhores passageiros, permaneçam sentados com os cintos afivelados.', { label: 'Comandante' });
     await at(39.6);
-    g.ui.story(false);
+    g.ui.story(false); this.skippable = false; this.skipping = false; g.ui.skipHint(-1);
     g.audio.play('crash', { vol: 1 }); cabin.stop(0.05);
     g.fx.flash = 0.6;
     await this.wait(3.5);
@@ -1115,6 +1125,16 @@ export class Story {
     await this.say('alice', 'Eles estão no quarto. Estão dormindo.');
     await this.wait(1.5);
     await this.say('doctor', 'Alice... os seus filhos morreram.', { label: 'Dr. Ramos', rate: 0.8 });
+    await this.wait(2.5);
+    g.audio.play('sob', { pitch: 320, vol: 0.5 });
+    await this.say('alice', 'Ele ia levar os dois. O homem de preto. Ele estava parado no corredor, com a voz do Daniel.', { pitch: 0.9 });
+    await this.say('alice', 'Eu precisava esconder os meus filhos num lugar onde ele nunca fosse achar.', { pitch: 0.9 });
+    await this.wait(1.5);
+    await this.say('doctor', 'Não havia ninguém no corredor, Alice. Naquela casa estavam só você e as crianças.', { label: 'Dr. Ramos', rate: 0.85 });
+    await this.wait(2);
+    await this.say('doctor', 'Foi você.', { label: 'Dr. Ramos', rate: 0.75 });
+    await this.wait(2.5);
+    await this.say('alice', 'Eu só queria que eles ficassem seguros.', { pitch: 0.85, rate: 0.8 });
     g.audio.play('glitch', { vol: 0.7 }); g.fx.flash = 0.3;
     hiss.stop(0.1);
     await this.wait(2);
@@ -1123,10 +1143,12 @@ export class Story {
     await g.ui.fade(0.85, 1.5);
     for (const [a, b] of [
       ['', 'Daniel morreu em março de 1998.'],
-      ['', 'Em novembro, Alice teve uma crise grave. Ela acreditava que precisava proteger os filhos de alguma coisa.'],
-      ['', 'Emily e Thomas não sobreviveram àquela noite.'],
+      ['', 'Sem tratamento, o luto de Alice virou uma psicose: ela passou a ouvir vozes e a ver uma figura de capa preta.'],
+      ['', 'Na noite de 20 de novembro, em plena crise psicótica, ela acreditou que a figura vinha buscar as crianças.'],
+      ['', 'Tentando protegê-las de algo que não existia, Alice tirou a vida de Emily e Thomas.'],
+      ['', 'Ela não se lembra. A mente dela construiu uma casa onde eles ainda estão vivos.'],
       ['', 'A casa é uma lembrança. O quarto 04 é real.'],
-    ]) await g.ui.titleCard(a, b, 3.2);
+    ]) await g.ui.titleCard(a, b, 3.6);
     await g.ui.fade(0, 1.5);
     g.setCinematic(false); g.player.moveLocked = false;
     F.tapeDone = true;

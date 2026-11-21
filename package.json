@@ -1,0 +1,18 @@
+{
+  "name": "alice",
+  "productName": "ALICE",
+  "version": "1.0.0",
+  "description": "ALICE: jogo de terror psicologico em primeira pessoa",
+  "main": "electron-main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "web": "node server.js",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-exe.ps1"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "resedit": "^2.0.3",
+    "electron": "^33.2.1"
+  }
+}

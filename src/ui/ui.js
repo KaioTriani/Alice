@@ -112,6 +112,14 @@ export class UI {
     $('#vhs').classList.toggle('hidden', !on);
     this.vhsDraw = on ? draw : null;
   }
+  // dica "segure E para pular" (k < 0 esconde)
+  skipHint(k, key = 'E') {
+    let el = document.getElementById('skipHint');
+    if (!el) { el = document.createElement('div'); el.id = 'skipHint'; el.style.cssText = 'position:fixed;right:28px;bottom:24px;z-index:7;color:#e9e2d0;font:13px Georgia;letter-spacing:.06em;text-shadow:0 0 8px #000;opacity:.75;pointer-events:none'; document.body.appendChild(el); }
+    if (k < 0) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    el.textContent = k > 0.02 ? `Pulando... ${Math.round(k * 100)}%` : `Segure [${key}] para pular`;
+  }
   // abertura desenhada
   story(on) { $('#story').classList.toggle('hidden', !on); this.storyOn = on; $('#status').style.visibility = on ? 'hidden' : ''; }
   updateStory(t, draw) { if (!this.storyOn) return; draw($('#storyCanvas').getContext('2d'), t); }
@@ -306,6 +314,29 @@ export class UI {
       toggle('Inverter eixo Y', 'invertY');
       toggle('Balanço da câmera ao andar', 'headBob');
       toggle('Voz sintetizada do Windows (experimental)', 'voiceSynth');
+      // levar o save de um lugar para outro (navegador, site, executável)
+      const sv = document.createElement('div'); sv.className = 'ctl';
+      const ex = document.createElement('button'); ex.textContent = 'Exportar save';
+      ex.onclick = () => {
+        const data = localStorage.getItem('alice.save.v1');
+        if (!data) { this.toast('Ainda não há progresso salvo.'); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = 'alice-save.json'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      };
+      const im = document.createElement('button'); im.textContent = 'Importar save';
+      const file = document.createElement('input'); file.type = 'file'; file.accept = '.json,application/json'; file.style.display = 'none';
+      im.onclick = () => file.click();
+      file.onchange = async () => {
+        try {
+          const d = JSON.parse(await file.files[0].text());
+          if (!d || !d.stage) throw new Error('inválido');
+          localStorage.setItem('alice.save.v1', JSON.stringify(d));
+          const b = document.getElementById('btnContinue'); if (b) b.disabled = false;
+          this.toast('Save importado. Use "Continuar" no menu.', 4);
+        } catch { this.toast('Esse arquivo não é um save de ALICE.', 4); }
+        file.value = '';
+      };
+      sv.append(ex, im, file); row('Progresso salvo', sv);
     }
     if (tab === 'video') {
       slider('Campo de visão', 'fov', 60, 95, 1, (v) => v + '°');

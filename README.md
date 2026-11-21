@@ -13,6 +13,23 @@ Jogo de terror psicológico em primeira pessoa, 3D low poly com estética de fit
 
 Não precisa de instalação de pacotes: o motor gráfico (Three.js) já está em `lib/`.
 
+## Versão para computador (executável Windows)
+
+O executável fica em `dist/ALICE-win32-x64/ALICE.exe`. Para distribuir, compacte a pasta `ALICE-win32-x64` inteira (o `.exe` precisa dos arquivos ao lado dele). Não precisa instalar nada nem ter internet.
+
+- Abre em tela cheia. **F11** alterna janela e tela cheia. **Alt+F4** fecha.
+- O progresso fica salvo no Windows do jogador (pasta de dados do app), separado do navegador.
+- Para levar um save do navegador para o executável: no jogo do navegador, **Configurações > Jogo > Exportar save**; no executável, **Importar save** e depois **Continuar**.
+
+Para gerar de novo depois de mudar o código (precisa do Node.js):
+
+```
+npm install
+npm run build
+```
+
+O script `tools/build-exe.ps1` monta o executável usando o descompactador do Windows (o do `electron-packager` trava no Node.js 26) e aplica o ícone com `tools/set-exe-info.mjs`. Também gera `dist/ALICE-1.0.0-windows.zip`, pronto para enviar.
+
 ## Publicar num site (Hostinger)
 
 O jogo é 100% estático (HTML, CSS e JavaScript). Não precisa de Node.js no servidor.
@@ -20,7 +37,7 @@ O jogo é 100% estático (HTML, CSS e JavaScript). Não precisa de Node.js no se
 1. No hPanel da Hostinger, abra o **Gerenciador de Arquivos** do domínio (ou subdomínio de testes).
 2. Entre em `public_html` (ou numa subpasta, por exemplo `public_html/alice`).
 3. Envie **todo o conteúdo** desta pasta mantendo a estrutura: `index.html`, `style.css`, `.htaccess`, `lib/`, `src/`.
-   - Os arquivos `server.js`, `INICIAR.bat`, `tools/` e os `.md` não são necessários no site (não atrapalham se forem junto).
+   - Os arquivos `server.js`, `INICIAR.bat`, `electron-main.js`, `package.json`, `tools/` e os `.md` não são necessários no site (não atrapalham se forem junto). A pasta `build/` só precisa do `icon.png` (ícone da aba).
    - Alternativa: em **Avançado > Git**, conecte este repositório e faça o deploy direto para `public_html`.
 4. Acesse o endereço no Chrome, Edge ou Firefox. Precisa de HTTPS ou localhost para o mouse ser capturado (a Hostinger já dá HTTPS grátis).
 

@@ -113,7 +113,7 @@ class Game {
     this.input.unlock(); this.input.down.clear();
     for (const id of ['menu', 'newgame', 'pause', 'settings', 'credits', 'death', 'ending', 'loading', 'doc', 'inventory', 'journal', 'vhs', 'titlecard', 'warning', 'story']) document.getElementById(id).classList.add('hidden');
     document.getElementById('subtitles').innerHTML = ''; document.getElementById('toasts').innerHTML = '';
-    this.ui.hideOverlay(null); this.ui.struggle(-1); this.ui.objective(null); this.ui.showHUD(false); this.ui.setPrompt(''); this.ui.storyOn = false;
+    this.ui.hideOverlay(null); this.ui.struggle(-1); this.ui.objective(null); this.ui.showHUD(false); this.ui.setPrompt(''); this.ui.storyOn = false; this.ui.skipHint(-1);
     this.clickHint.style.display = 'none';
     this.scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
     new Game(mode);

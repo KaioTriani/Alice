@@ -29,7 +29,7 @@ export function buildDocs(images) {
   D.file = { id: 'file', title: 'Prontuário', style: 'type', text:
     'HOSPITAL PSIQUIÁTRICO SANTA CLARA\nALA C  ·  QUARTO 04\n\nPaciente: ALICE M.\nIdade: 42 anos\nInternação: 21/11/1998\n\n' +
     'Quadro: episódio psicótico grave iniciado após luto complicado (óbito do cônjuge em acidente aéreo, 03/1998). Alucinações auditivas. Reconstrução delirante do ambiente doméstico.\n\n' +
-    'Ocorrência: óbito dos dois filhos menores (E., 8 anos; T., 5 anos) na residência da família, na noite de 20/11/1998. A paciente foi considerada inimputável em laudo.\n\n' +
+    'Ocorrência: na noite de 20/11/1998, durante surto psicótico agudo com delírio persecutório (acreditava que uma figura "de capa preta" viria levar os filhos), a paciente causou a morte dos dois filhos menores (E., 8 anos; T., 5 anos) na residência da família. Encontrada pela polícia sentada no corredor, dizendo que as crianças "estavam escondidas, a salvo". Considerada inimputável em laudo psiquiátrico.\n\n' +
     'Evolução: não reconhece o quarto. Refere estar em casa. Prepara refeições imaginárias três vezes ao dia. Pergunta pelos filhos à noite. Descreve uma figura alta, de capa preta, que "fala com a voz deles".\n\n' +
     'Conduta: manter medicação. Não confrontar de forma abrupta. Sessões diárias com o Dr. Ramos.' };
   D.vhsLabel = { id: 'vhsLabel', title: 'Fita VHS', text: 'Etiqueta escrita à mão por Daniel:\n"Para Alice. Assista quando estiver pronta."\n\nData na lombada: 28/03/1998.\nNove dias depois do acidente.' };

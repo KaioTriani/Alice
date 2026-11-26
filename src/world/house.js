@@ -273,9 +273,36 @@ export function buildHouse(g) {
     m.rotation.x = -PI / 2; m.rotation.z = (Math.random() - 0.5) * 0.4; m.position.set(x, 0.62, 0.55); S.add(m); R.drawingPillow.push(m);
   }
   // pegadas molhadas (Ato II)
+  // trilha: sai da banheira cheia, cruza o corredor, entra no quarto das crianças e termina no guarda-roupa
   R.footprints = new THREE.Group(); S.add(R.footprints);
-  const fpM = new THREE.MeshBasicMaterial({ color: 0x1d2a33, transparent: true, opacity: 0.55, depthWrite: false });
-  for (let i = 0; i < 8; i++) { const f = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.16), fpM); f.rotation.x = -PI / 2; f.rotation.z = -PI / 2 + 0.2; f.position.set(10.1 + i * 0.3, 0.012, 2.3 + (i % 2) * 0.12 + i * 0.07); R.footprints.add(f); }
+  {
+    const c = document.createElement('canvas'); c.width = 32; c.height = 64; const x = c.getContext('2d');
+    x.fillStyle = '#fff';
+    x.beginPath(); x.ellipse(16, 30, 9, 15, 0, 0, Math.PI * 2); x.fill();          // planta
+    x.beginPath(); x.ellipse(16, 52, 7, 9, 0, 0, Math.PI * 2); x.fill();           // calcanhar
+    for (const [tx, ty, r] of [[9, 11, 3.6], [14, 8, 3], [19, 8, 2.7], [23, 10, 2.4], [26, 14, 2.1]]) { x.beginPath(); x.arc(tx, ty, r, 0, Math.PI * 2); x.fill(); }
+    const tex = new THREE.CanvasTexture(c);
+    const fpM = new THREE.MeshBasicMaterial({ color: 0x9fbccc, alphaMap: tex, transparent: true, opacity: 0.6, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+    const pudM = new THREE.MeshBasicMaterial({ color: 0x7f9fb0, transparent: true, opacity: 0.45, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+    const path = [[6.0, 1.05], [6.45, 2.4], [6.5, 3.6], [6.6, 4.7], [8.2, 4.95], [10.2, 4.8], [10.5, 3.7], [10.9, 3.0], [11.95, 2.85]];
+    let side = 1, carry = 0.15;
+    for (let i = 0; i < path.length - 1; i++) {
+      const [ax, az] = path[i], [bx, bz] = path[i + 1], len = Math.hypot(bx - ax, bz - az), dx = (bx - ax) / len, dz = (bz - az) / len;
+      for (let d = carry; d < len; d += 0.3) {
+        const f = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.21), fpM);
+        f.rotation.x = -PI / 2; f.rotation.z = Math.atan2(-dx, -dz) + (Math.random() - 0.5) * 0.15;
+        f.position.set(ax + dx * d - dz * 0.065 * side, 0.024, az + dz * d + dx * 0.065 * side);
+        f.scale.x = side; R.footprints.add(f); side = -side; carry = d + 0.3 - len;
+      }
+    }
+    // poças: na frente da banheira e escorrendo por baixo do guarda-roupa
+    for (const [px, pz, sx, sz] of [[6.05, 1.0, 0.7, 0.35], [12.2, 2.9, 0.5, 0.9]]) {
+      const p = new THREE.Mesh(new THREE.CircleGeometry(0.5, 14), pudM); p.rotation.x = -PI / 2; p.scale.set(sx, sz, 1); p.position.set(px, 0.022, pz); R.footprints.add(p);
+    }
+    // água parada na banheira
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.56), new THREE.MeshBasicMaterial({ color: 0x3c5560, transparent: true, opacity: 0.8 }));
+    water.rotation.x = -PI / 2; water.position.set(5.95, 0.45, 0.47); R.footprints.add(water);
+  }
   R.footprints.visible = false;
   // roupas sobre as camas (Ato II)
   R.clothesOnBeds = new THREE.Group(); S.add(R.clothesOnBeds);

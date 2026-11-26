@@ -712,11 +712,21 @@ export class Story {
     g.audio.play('swell', { vol: 0.3 });
     H.footprints.visible = true;
     this.loops.drip = g.audio.loop('drip', { pos: { x: 12.6, y: 1, z: 2.9 }, vol: 0.8 });
+    this.loops.tub = g.audio.loop('drip', { pos: { x: 6, y: 0.6, z: 0.5 }, vol: 0.5 });
     await this.wait(1.5);
-    this.obj('Pegadas pequenas', [['follow', 'Siga as pegadas molhadas']]);
+    g.ui.toast('Pegadas pequenas e molhadas no chão. Pés descalços, do tamanho dos do Thomas.', 4.5);
+    this.obj('Pegadas pequenas', [['tub', 'Descubra de onde vêm as pegadas molhadas'], ['follow', 'Siga as pegadas até onde elas terminam']]);
     F.followPrints = true;
-    await this.until(() => F.visionDone);
-    this.loops.drip.stop(); H.footprints.visible = false;
+    H.kidsWardrobe.swing.target = 0.06; // fresta: a água escorre por baixo
+    const t0 = g.time; let hinted = false;
+    await this.until(() => {
+      const p = g.player.pos;
+      if (!F.sawTub && p.x > 5 && p.x < 8 && p.z < 2.4) { F.sawTub = true; this.done('tub'); g.ui.toast('A banheira está cheia. A água está gelada e ninguém a encheu.', 4); g.status.shock(3); }
+      if (!hinted && g.time - t0 > 50) { hinted = true; g.ui.toast('As pegadas terminam no guarda-roupa das crianças. Algo pinga lá dentro.', 4.5); }
+      return F.visionDone;
+    });
+    this.done('tub'); this.done('follow');
+    this.loops.drip.stop(); this.loops.tub.stop(); H.footprints.visible = false;
     H.drawing3.visible = true;
     const steps = [['rabbit', 'Encontre o coelho de pelúcia', g.inventory.has('rabbit')], ['read', 'Veja o desenho deixado na cama do Thomas'], ['open', 'Encontre algo para abrir a costura do coelho'], ['key', `Abra o coelho (inventário [${g.keyName('inventory')}]: Combinar)`], ['vanity', 'Descubra o que a chave pequena abre']];
     this.obj('O segredo do coelho', steps.map(([a, b]) => [a, b]));
